@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Quark Invaders</title>
   <style>
     body {
@@ -33,7 +33,7 @@
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
-  <div id="message">Keyword: <strong>udscbt</strong></div>
+  <div id="message">✅ Keyword Unlocked: <strong>udscbt</strong></div>
   <div id="tracker">Clicked: <span id="clickHistory"></span></div>
 
   <script>
@@ -55,7 +55,6 @@
     };
 
     const correctOrder = ['up', 'down', 'strange', 'charm', 'bottom', 'top'];
-    let currentStep = 0;
     let clickedSequence = [];
 
     class Quark {
@@ -108,7 +107,7 @@
       quarks.push(new Quark(x, y, type));
     });
 
-    // Add random extras
+    // Add more random quarks
     for (let i = 0; i < 10; i++) {
       const type = quarkTypes[Math.floor(Math.random() * quarkTypes.length)];
       const x = Math.random() * canvas.width;
@@ -124,6 +123,22 @@
 
     animate();
 
+    function resetClicks() {
+      setTimeout(() => {
+        clickedSequence = [];
+        clickHistorySpan.textContent = '';
+      }, 1500);
+    }
+
+    function checkAnswer() {
+      const match = clickedSequence.every((val, i) => val === correctOrder[i]);
+      if (match) {
+        messageDiv.style.display = 'block';
+      } else {
+        resetClicks();
+      }
+    }
+
     canvas.addEventListener('click', e => {
       const rect = canvas.getBoundingClientRect();
       const mx = e.clientX - rect.left;
@@ -131,36 +146,18 @@
 
       for (let q of quarks) {
         if (q.isClicked(mx, my)) {
-          clickedSequence.push(q.type);
-          clickHistorySpan.textContent = clickedSequence.join(', ');
+          if (clickedSequence.length < 6) {
+            clickedSequence.push(q.type);
+            clickHistorySpan.textContent = clickedSequence.join(', ');
 
-          if (q.type === correctOrder[currentStep]) {
-            currentStep++;
-            if (currentStep === correctOrder.length) {
-              revealMessage();
+            if (clickedSequence.length === 6) {
+              checkAnswer();
             }
-          } else {
-            resetClicks();
-          }
-
-          // If clicked 6 but incorrect order
-          if (clickedSequence.length === correctOrder.length && currentStep !== correctOrder.length) {
-            resetClicks();
           }
           break;
         }
       }
     });
-
-    function resetClicks() {
-      currentStep = 0;
-      clickedSequence = [];
-      clickHistorySpan.textContent = '';
-    }
-
-    function revealMessage() {
-      messageDiv.style.display = 'block';
-    }
 
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
