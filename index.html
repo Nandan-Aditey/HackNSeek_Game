@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Quark Invaders</title>
+  <title>Quark Challenge</title>
   <style>
     body {
       margin: 0;
@@ -14,13 +14,17 @@
     canvas {
       display: block;
     }
-    #message {
+    #message, #error {
       position: absolute;
       top: 20px;
       width: 100%;
       text-align: center;
       font-size: 2rem;
       display: none;
+    }
+    #message a {
+      color: cyan;
+      text-decoration: underline;
     }
     #tracker {
       position: absolute;
@@ -33,13 +37,15 @@
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
-  <div id="message">✅ Keyword Unlocked: <strong>udscbt</strong></div>
+  <div id="message">✅ Correct Order! Proceed to: <a href="https://quarks-iisc.github.io/blog/" target="_blank">https://quarks-iisc.github.io/blog/</a></div>
+  <div id="error">❌ Incorrect order. Try again.</div>
   <div id="tracker">Clicked: <span id="clickHistory"></span></div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const messageDiv = document.getElementById('message');
+    const errorDiv = document.getElementById('error');
     const clickHistorySpan = document.getElementById('clickHistory');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -100,14 +106,14 @@
 
     const quarks = [];
 
-    // Ensure one of each required type
+    // Ensure one of each required type exists
     correctOrder.forEach(type => {
       const x = Math.random() * canvas.width;
       const y = Math.random() * canvas.height;
       quarks.push(new Quark(x, y, type));
     });
 
-    // Add more random quarks
+    // Add some random distractors
     for (let i = 0; i < 10; i++) {
       const type = quarkTypes[Math.floor(Math.random() * quarkTypes.length)];
       const x = Math.random() * canvas.width;
@@ -127,7 +133,8 @@
       setTimeout(() => {
         clickedSequence = [];
         clickHistorySpan.textContent = '';
-      }, 1500);
+        errorDiv.style.display = 'none';
+      }, 2000);
     }
 
     function checkAnswer() {
@@ -135,6 +142,7 @@
       if (match) {
         messageDiv.style.display = 'block';
       } else {
+        errorDiv.style.display = 'block';
         resetClicks();
       }
     }
