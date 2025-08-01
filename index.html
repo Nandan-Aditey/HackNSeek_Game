@@ -26,7 +26,7 @@
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
-  <div id="message">Keyword: <strong>strangequarks</strong></div>
+  <div id="message">Keyword: <strong>udscbt</strong></div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -45,6 +45,9 @@
       bottom: '#00f'
     };
 
+    const correctOrder = ['up', 'down', 'strange', 'charm', 'bottom', 'top'];
+    let currentStep = 0;
+
     class Quark {
       constructor(x, y, type) {
         this.x = x;
@@ -53,7 +56,7 @@
         this.radius = 25;
         this.dx = Math.random() * 4 - 2;
         this.dy = Math.random() * 4 - 2;
-        this.clicks = 0;
+        this.clicked = false;
       }
 
       draw() {
@@ -64,6 +67,7 @@
         ctx.strokeStyle = '#fff';
         ctx.stroke();
         ctx.closePath();
+
         ctx.fillStyle = '#000';
         ctx.font = 'bold 12px monospace';
         ctx.textAlign = 'center';
@@ -87,7 +91,7 @@
     }
 
     const quarks = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       const type = quarkTypes[Math.floor(Math.random() * quarkTypes.length)];
       const x = Math.random() * canvas.width;
       const y = Math.random() * canvas.height;
@@ -107,16 +111,19 @@
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
 
-      quarks.forEach(q => {
+      for (let q of quarks) {
         if (q.isClicked(mx, my)) {
-          if (q.type === 'strange') {
-            q.clicks++;
-            if (q.clicks >= 3) {
+          if (q.type === correctOrder[currentStep]) {
+            currentStep++;
+            if (currentStep === correctOrder.length) {
               revealMessage();
             }
+          } else {
+            currentStep = 0; // reset on wrong click
           }
+          break;
         }
-      });
+      }
     });
 
     function revealMessage() {
