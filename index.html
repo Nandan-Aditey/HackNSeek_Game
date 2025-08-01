@@ -14,24 +14,32 @@
     canvas {
       display: block;
     }
-    #message {
+    #message, #clicked {
       position: absolute;
-      top: 20px;
       width: 100%;
       text-align: center;
-      font-size: 2rem;
+      font-size: 1.5rem;
+    }
+    #message {
+      top: 20px;
       display: none;
+    }
+    #clicked {
+      top: 60px;
     }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
   <div id="message">Keyword: <strong>udscbt</strong></div>
+  <div id="clicked">Clicked: </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const messageDiv = document.getElementById('message');
+    const clickedDiv = document.getElementById('clicked');
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -46,7 +54,7 @@
     };
 
     const correctOrder = ['up', 'down', 'strange', 'charm', 'bottom', 'top'];
-    let currentStep = 0;
+    let clickedSequence = [];
 
     class Quark {
       constructor(x, y, type) {
@@ -56,7 +64,6 @@
         this.radius = 25;
         this.dx = Math.random() * 4 - 2;
         this.dy = Math.random() * 4 - 2;
-        this.clicked = false;
       }
 
       draw() {
@@ -113,13 +120,19 @@
 
       for (let q of quarks) {
         if (q.isClicked(mx, my)) {
-          if (q.type === correctOrder[currentStep]) {
-            currentStep++;
-            if (currentStep === correctOrder.length) {
+          clickedSequence.push(q.type);
+          clickedDiv.textContent = "Clicked: " + clickedSequence.join(' - ');
+
+          if (clickedSequence.length === correctOrder.length) {
+            if (clickedSequence.join(',') === correctOrder.join(',')) {
               revealMessage();
+            } else {
+              clickedDiv.textContent += " ❌ Wrong! Resetting...";
+              setTimeout(() => {
+                clickedSequence = [];
+                clickedDiv.textContent = "Clicked: ";
+              }, 1000);
             }
-          } else {
-            currentStep = 0; // reset on wrong click
           }
           break;
         }
@@ -128,6 +141,7 @@
 
     function revealMessage() {
       messageDiv.style.display = 'block';
+      clickedDiv.textContent += " ✅ Correct!";
     }
 
     window.addEventListener('resize', () => {
