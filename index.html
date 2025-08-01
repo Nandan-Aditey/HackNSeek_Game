@@ -14,32 +14,33 @@
     canvas {
       display: block;
     }
-    #message, #clicked {
+    #message {
       position: absolute;
+      top: 20px;
       width: 100%;
       text-align: center;
-      font-size: 1.5rem;
-    }
-    #message {
-      top: 20px;
+      font-size: 2rem;
       display: none;
     }
-    #clicked {
-      top: 60px;
+    #tracker {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 1.2rem;
     }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
   <div id="message">Keyword: <strong>udscbt</strong></div>
-  <div id="clicked">Clicked: </div>
+  <div id="tracker">Clicked: <span id="clickHistory"></span></div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const messageDiv = document.getElementById('message');
-    const clickedDiv = document.getElementById('clicked');
-
+    const clickHistorySpan = document.getElementById('clickHistory');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -54,6 +55,7 @@
     };
 
     const correctOrder = ['up', 'down', 'strange', 'charm', 'bottom', 'top'];
+    let currentStep = 0;
     let clickedSequence = [];
 
     class Quark {
@@ -98,7 +100,16 @@
     }
 
     const quarks = [];
-    for (let i = 0; i < 15; i++) {
+
+    // Ensure one of each required type
+    correctOrder.forEach(type => {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      quarks.push(new Quark(x, y, type));
+    });
+
+    // Add random extras
+    for (let i = 0; i < 10; i++) {
       const type = quarkTypes[Math.floor(Math.random() * quarkTypes.length)];
       const x = Math.random() * canvas.width;
       const y = Math.random() * canvas.height;
@@ -121,27 +132,34 @@
       for (let q of quarks) {
         if (q.isClicked(mx, my)) {
           clickedSequence.push(q.type);
-          clickedDiv.textContent = "Clicked: " + clickedSequence.join(' - ');
+          clickHistorySpan.textContent = clickedSequence.join(', ');
 
-          if (clickedSequence.length === correctOrder.length) {
-            if (clickedSequence.join(',') === correctOrder.join(',')) {
+          if (q.type === correctOrder[currentStep]) {
+            currentStep++;
+            if (currentStep === correctOrder.length) {
               revealMessage();
-            } else {
-              clickedDiv.textContent += " ❌ Wrong! Resetting...";
-              setTimeout(() => {
-                clickedSequence = [];
-                clickedDiv.textContent = "Clicked: ";
-              }, 1000);
             }
+          } else {
+            resetClicks();
+          }
+
+          // If clicked 6 but incorrect order
+          if (clickedSequence.length === correctOrder.length && currentStep !== correctOrder.length) {
+            resetClicks();
           }
           break;
         }
       }
     });
 
+    function resetClicks() {
+      currentStep = 0;
+      clickedSequence = [];
+      clickHistorySpan.textContent = '';
+    }
+
     function revealMessage() {
       messageDiv.style.display = 'block';
-      clickedDiv.textContent += " ✅ Correct!";
     }
 
     window.addEventListener('resize', () => {
