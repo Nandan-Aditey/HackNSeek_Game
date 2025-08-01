@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quark Invaders</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+      font-family: monospace;
+      color: lime;
+    }
+    canvas {
+      display: block;
+    }
+    #message {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 2rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="message">Keyword: <strong>strangequarks</strong></div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const messageDiv = document.getElementById('message');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const quarkTypes = ['up', 'down', 'strange', 'charm', 'top', 'bottom'];
+    const colors = {
+      up: '#ff3',
+      down: '#3ff',
+      strange: '#f3f',
+      charm: '#0f0',
+      top: '#f00',
+      bottom: '#00f'
+    };
+
+    class Quark {
+      constructor(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.radius = 25;
+        this.dx = Math.random() * 4 - 2;
+        this.dy = Math.random() * 4 - 2;
+        this.clicks = 0;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = colors[this.type];
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+        ctx.closePath();
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.type, this.x, this.y + 4);
+      }
+
+      update() {
+        this.x += this.dx;
+        this.y += this.dy;
+
+        if (this.x + this.radius > canvas.width || this.x - this.radius < 0) this.dx *= -1;
+        if (this.y + this.radius > canvas.height || this.y - this.radius < 0) this.dy *= -1;
+
+        this.draw();
+      }
+
+      isClicked(mx, my) {
+        const dist = Math.hypot(this.x - mx, this.y - my);
+        return dist < this.radius;
+      }
+    }
+
+    const quarks = [];
+    for (let i = 0; i < 10; i++) {
+      const type = quarkTypes[Math.floor(Math.random() * quarkTypes.length)];
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      quarks.push(new Quark(x, y, type));
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      quarks.forEach(q => q.update());
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    canvas.addEventListener('click', e => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      quarks.forEach(q => {
+        if (q.isClicked(mx, my)) {
+          if (q.type === 'strange') {
+            q.clicks++;
+            if (q.clicks >= 3) {
+              revealMessage();
+            }
+          }
+        }
+      });
+    });
+
+    function revealMessage() {
+      messageDiv.style.display = 'block';
+    }
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
